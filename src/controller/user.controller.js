@@ -63,6 +63,7 @@ export const editProfile = async (req, res) => {
     }
 };
 
+
 export const getOtherUser = async (req, res) => {
     try {
         const users = await User.find({

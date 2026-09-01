@@ -5,6 +5,7 @@ import cors from 'cors'
 import cookieParser from "cookie-parser"
 import authRouter from "./routes/auth.routes.js"
 import userRouter from "./routes/user.routes.js"
+import messageRouter from "./routes/message.routes.js"
 const app = express()
 
 app.use(express.json())
@@ -18,6 +19,8 @@ app.use(cors({
 app.use("/api/auth",authRouter)
 
 app.use("/api/user",userRouter)
+
+app.use("/api/message",messageRouter)
 
 app.get("/health",(req,res)=>{
     res.send("Hello from express server")

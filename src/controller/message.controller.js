@@ -40,3 +40,22 @@ export const sendMessage = async (req, res) => {
         return res.status(500).json({message:"Send message request failed"})
     }
 }
+
+
+export const getMessage = async(req,res)=>{
+    try {
+        let sender = req.userId
+        let {receiverId} = req.params
+        let conversation = await Conversation.findOne({
+            participatants: {$all:[sender,receiverId]}
+        }).populate("messages")
+
+        if(!conversation){
+            return res.status(200).json({message:"No conversation found",data:[]})
+        }
+        return res.status(200).json(conversation?.messages)
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({message:"Get message request failed"})
+    }
+}

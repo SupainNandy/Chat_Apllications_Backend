@@ -23,4 +23,8 @@ app.get("/health",(req,res)=>{
     res.send("Hello from express server")
 })
 
+app.get("/", (req,res)=>{
+    res.send("Root endpoint: Server is running")
+})
+
 export default app

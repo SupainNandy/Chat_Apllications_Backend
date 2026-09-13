@@ -35,9 +35,13 @@ export const sendMessage = async (req, res) => {
         }
 
         await conversation.save()
-        const receiverSocketId = getReceiverSocketId(receiverId)
-        if(receiverSocketId){
-            io.to(receiverSocketId).emit("newMessage",newMessage)
+        const receiverSocketIds = getReceiverSocketId(receiverId)
+        if(receiverSocketIds && Array.isArray(receiverSocketIds)){
+            receiverSocketIds.forEach(sockId => {
+                io.to(sockId).emit("newMessage", newMessage)
+            })
+        } else if (receiverSocketIds) {
+            io.to(receiverSocketIds).emit("newMessage", newMessage)
         }
 
         return res.status(201).json({message:"Message sent successfully", data: newMessage})
@@ -91,9 +95,13 @@ export const deleteMessage = async (req, res) => {
         if (conversation) {
             const receiverId = conversation.participants.find(p => p.toString() !== senderId.toString());
             if (receiverId) {
-                const receiverSocketId = getReceiverSocketId(receiverId.toString());
-                if(receiverSocketId){
-                    io.to(receiverSocketId).emit("messageDeleted", messageId);
+                const receiverSocketIds = getReceiverSocketId(receiverId.toString());
+                if(receiverSocketIds && Array.isArray(receiverSocketIds)){
+                    receiverSocketIds.forEach(sockId => {
+                        io.to(sockId).emit("messageDeleted", messageId);
+                    });
+                } else if(receiverSocketIds){
+                    io.to(receiverSocketIds).emit("messageDeleted", messageId);
                 }
             }
         }

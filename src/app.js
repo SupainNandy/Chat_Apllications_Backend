@@ -11,7 +11,9 @@ app.use(express.json())
 app.use(morgan("dev"))
 app.use(cookieParser())
 app.use(cors({
-    origin: ["http://localhost:5173", "https://chat-apllications.vercel.app"],
+    origin: (origin, callback) => {
+        callback(null, true);
+    },
     credentials: true,
 }))
 

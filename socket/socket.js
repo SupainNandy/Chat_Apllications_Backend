@@ -9,7 +9,7 @@ let server = http.createServer(app)
 
 const io = new Server(server,{
     cors:{
-        origin: process.env.CLIENT_URL || "http://localhost:5173",
+        origin: ["http://localhost:5173", "https://chat-apllications.vercel.app"],
         credentials:true
     }
 })

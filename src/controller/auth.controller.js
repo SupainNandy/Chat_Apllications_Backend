@@ -36,8 +36,8 @@ export async function signup(req,res){
         user.refreshToken = refreshToken
         await user.save()
 
-        res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite:"Strict", secure:false })
-        res.cookie("refreshToken", refreshToken, { httpOnly:true, maxAge:7*24*60*60*1000, sameSite:"Strict", secure:false })
+        res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict", secure: process.env.NODE_ENV === "production" })
+        res.cookie("refreshToken", refreshToken, { httpOnly:true, maxAge:7*24*60*60*1000, sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict", secure: process.env.NODE_ENV === "production" })
 
         return res.status(201).json({message:"User signup success", user, accessToken})
     }catch(err){
@@ -66,8 +66,8 @@ export async function login(req,res){
         user.refreshToken = refreshToken
         await user.save()
 
-        res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite:"Strict", secure:false })
-        res.cookie("refreshToken", refreshToken, { httpOnly:true, maxAge:7*24*60*60*1000, sameSite:"Strict", secure:false })
+        res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict", secure: process.env.NODE_ENV === "production" })
+        res.cookie("refreshToken", refreshToken, { httpOnly:true, maxAge:7*24*60*60*1000, sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict", secure: process.env.NODE_ENV === "production" })
 
         return res.status(200).json({message:"User login success", user, accessToken})
     }catch(err){
@@ -112,7 +112,7 @@ export async function refresh(req, res) {
             }
             
             const accessToken = await genAccessToken(user._id)
-            res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite:"Strict", secure:false })
+            res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict", secure: process.env.NODE_ENV === "production" })
             return res.status(200).json({ message: "Token refreshed successfully", accessToken })
         })
     } catch (err) {
@@ -149,8 +149,8 @@ export async function google(req,res){
         }
         await user.save()
 
-        res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite:"Strict", secure:false })
-        res.cookie("refreshToken", refreshToken, { httpOnly:true, maxAge:7*24*60*60*1000, sameSite:"Strict", secure:false })
+        res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict", secure: process.env.NODE_ENV === "production" })
+        res.cookie("refreshToken", refreshToken, { httpOnly:true, maxAge:7*24*60*60*1000, sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict", secure: process.env.NODE_ENV === "production" })
 
         return res.status(200).json({message:"Google Sign-In success", user, accessToken})
     }catch(err){

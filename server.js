@@ -4,6 +4,7 @@ import { server } from "./socket/socket.js"
 import "./src/app.js"
 
 env.config()
+if (process.env.RENDER) process.env.NODE_ENV = 'production';
 
 const port = process.env.PORT || 4000
 

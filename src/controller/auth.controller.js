@@ -1,9 +1,9 @@
-import { genToken } from "../config/token.js"
+import { genAccessToken, genRefreshToken } from "../config/token.js"
 import User from "../model/user.model.js"
 import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
 
-// signUp
-export async function signup (req,res){
+export async function signup(req,res){
     try{
         const {userName,name,password,email}= req.body
 
@@ -30,29 +30,23 @@ export async function signup (req,res){
             password:hassPass
         })
 
-        const token = await genToken(user._id)
+        const accessToken = await genAccessToken(user._id)
+        const refreshToken = await genRefreshToken(user._id)
 
-        res.cookie("token",token,{
-            httpOnly:true,
-            maxAge:7*24*60*1000,
-            sameSite:"Strict",
-            secure:false
-        }
-        )
+        user.refreshToken = refreshToken
+        await user.save()
 
-        return res.status(201).json({message:"User signup success",user,token})
+        res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite:"Strict", secure:false })
+        res.cookie("refreshToken", refreshToken, { httpOnly:true, maxAge:7*24*60*60*1000, sameSite:"Strict", secure:false })
 
-
+        return res.status(201).json({message:"User signup success", user, accessToken})
     }catch(err){
         console.log(err)
         res.status(500).json({message:`Signup error ${err}`})
     }
 }
 
-
-// Login 
-
-export async function login (req,res){
+export async function login(req,res){
     try{
         const {email,password} = req.body
 
@@ -66,32 +60,101 @@ export async function login (req,res){
             return res.status(400).json({message:"Incorrect Passwword"})
         }
 
-        const token = await genToken(user._id)
+        const accessToken = await genAccessToken(user._id)
+        const refreshToken = await genRefreshToken(user._id)
 
-        res.cookie("token",token,{
-            httpOnly:true,
-            maxAge:7*24*60*1000,
-            sameSite:"Strict",
-            secure:false
-        })
+        user.refreshToken = refreshToken
+        await user.save()
 
-        return res.status(200).json({message:"User login success",user,token})
+        res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite:"Strict", secure:false })
+        res.cookie("refreshToken", refreshToken, { httpOnly:true, maxAge:7*24*60*60*1000, sameSite:"Strict", secure:false })
 
+        return res.status(200).json({message:"User login success", user, accessToken})
     }catch(err){
         console.log(err)
         res.status(500).json({message:`User Login Error ${err}`})
     }
 }
 
-//Logout
-
 export async function logout(req,res) {
     try{
-        res.clearCookie("token")
+        if (req.cookies.refreshToken) {
+            const user = await User.findOne({ refreshToken: req.cookies.refreshToken })
+            if (user) {
+                user.refreshToken = ""
+                await user.save()
+            }
+        }
+        res.clearCookie("accessToken")
+        res.clearCookie("refreshToken")
         return res.status(200).json({message:"Logout successfuly"})
-
     }catch(err){
         console.log(err)
         return res.status(500).json({message:`Logout error ${err}` })
+    }
+}
+
+export async function refresh(req, res) {
+    try {
+        const refreshToken = req.cookies.refreshToken
+        if (!refreshToken) {
+            return res.status(401).json({ message: "No refresh token provided" })
+        }
+
+        const user = await User.findOne({ refreshToken })
+        if (!user) {
+            return res.status(403).json({ message: "Invalid refresh token" })
+        }
+
+        jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ message: "Refresh token expired or invalid" })
+            }
+            
+            const accessToken = await genAccessToken(user._id)
+            res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite:"Strict", secure:false })
+            return res.status(200).json({ message: "Token refreshed successfully", accessToken })
+        })
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({ message: `Refresh token error ${err}` })
+    }
+}
+
+export async function google(req,res){
+    try{
+        const {email, name, photoURL} = req.body
+        let user = await User.findOne({email})
+
+        if(!user){
+            const userName = email.split('@')[0] + Math.floor(Math.random() * 10000)
+            const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8)
+            const hassPass = await bcrypt.hash(randomPassword, 10)
+            
+            user = await User.create({
+                userName,
+                name,
+                email,
+                password: hassPass,
+                image: photoURL
+            })
+        }
+
+        const accessToken = await genAccessToken(user._id)
+        const refreshToken = await genRefreshToken(user._id)
+
+        user.refreshToken = refreshToken
+        if(photoURL && !user.image) {
+            user.image = photoURL
+        }
+        await user.save()
+
+        res.cookie("accessToken", accessToken, { httpOnly:true, maxAge:15*60*1000, sameSite:"Strict", secure:false })
+        res.cookie("refreshToken", refreshToken, { httpOnly:true, maxAge:7*24*60*60*1000, sameSite:"Strict", secure:false })
+
+        return res.status(200).json({message:"Google Sign-In success", user, accessToken})
+    }catch(err){
+        console.log("Google Auth Error:", err)
+        return res.status(500).json({message: "Google Auth Error", error: err.message})
     }
 }

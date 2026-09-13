@@ -1,5 +1,5 @@
 import express from "express"
-import { login, logout, signup } from "../controller/auth.controller.js"
+import { login, logout, signup, google, refresh } from "../controller/auth.controller.js"
 
 const authRouter = express.Router()
 
@@ -20,4 +20,8 @@ authRouter.post('/logout',logout)
 
 
 
-export default authRouter
+authRouter.post("/refresh", refresh)
+
+authRouter.post("/google", google);
+
+export default authRouter;

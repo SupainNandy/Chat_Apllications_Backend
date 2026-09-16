@@ -7,10 +7,7 @@ let server = http.createServer(app)
 
 const io = new Server(server, {
     cors: {
-        origin: (origin, callback) => {
-            // Allow any origin that is localhost or vercel.app or undefined
-            callback(null, true);
-        },
+        origin: process.env.FRONTEND_URL || ((origin, callback) => callback(null, true)),
         credentials: true
     },
     pingTimeout: 60000,

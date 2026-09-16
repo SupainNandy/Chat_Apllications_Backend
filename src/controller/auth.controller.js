@@ -85,8 +85,9 @@ export async function logout(req,res) {
                 await user.save()
             }
         }
-        res.clearCookie("accessToken")
-        res.clearCookie("refreshToken")
+        const cookieOptions = { httpOnly:true, sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict", secure: process.env.NODE_ENV === "production" };
+        res.clearCookie("accessToken", cookieOptions)
+        res.clearCookie("refreshToken", cookieOptions)
         return res.status(200).json({message:"Logout successfuly"})
     }catch(err){
         console.log(err)
@@ -97,17 +98,25 @@ export async function logout(req,res) {
 export async function refresh(req, res) {
     try {
         const refreshToken = req.cookies.refreshToken
+        const cookieOptions = { httpOnly:true, sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict", secure: process.env.NODE_ENV === "production" };
+        
         if (!refreshToken) {
+            res.clearCookie("accessToken", cookieOptions);
+            res.clearCookie("refreshToken", cookieOptions);
             return res.status(401).json({ message: "No refresh token provided" })
         }
 
         const user = await User.findOne({ refreshToken })
         if (!user) {
+            res.clearCookie("accessToken", cookieOptions);
+            res.clearCookie("refreshToken", cookieOptions);
             return res.status(403).json({ message: "Invalid refresh token" })
         }
 
         jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
             if (err) {
+                res.clearCookie("accessToken", cookieOptions);
+                res.clearCookie("refreshToken", cookieOptions);
                 return res.status(403).json({ message: "Refresh token expired or invalid" })
             }
             

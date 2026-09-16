@@ -10,5 +10,5 @@ const port = process.env.PORT || 4000
 
 server.listen(port,()=>{
     connectDB()
-    console.log("Express server start at http://localhost:$port")
+    console.log(`Express server start at http://localhost:${port}`)
 })

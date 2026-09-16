@@ -11,7 +11,7 @@ app.use(express.json())
 app.use(morgan("dev"))
 app.use(cookieParser())
 app.use(cors({
-    origin: process.env.FRONTEND_URL || (origin, callback) => callback(null, true), // Fallback to allowing all origins if not specified, but allowing an explicit frontend URL
+    origin: process.env.FRONTEND_URL || ((origin, callback) => callback(null, true)), // Fallback to allowing all origins if not specified, but allowing an explicit frontend URL
     credentials: true,
 }))
 

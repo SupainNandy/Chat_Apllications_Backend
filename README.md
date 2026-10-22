@@ -19,6 +19,7 @@ The backend is maintained separately from the frontend to keep the application m
 - JavaScript
 - npm
 - Socket-related functionality
+- Firebase Oauth
 
 Verify the project's `package.json` to confirm the exact frameworks and libraries used.
 
@@ -152,4 +153,10 @@ Contributions and suggestions are welcome.
 
 ## Author
 
-**Sup
+**Supain Nandy**
+
+GitHub: [https://github.com/SupainNandy](https://github.com/SupainNandy)
+
+## License
+
+Add a `LICENSE` file and specify the applicable license before distributing the project for reuse.
